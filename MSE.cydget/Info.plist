@@ -1,0 +1,9 @@
+{
+	CYTagline = "Maldives Stock Exchange Information";
+	CYPlugin = WebCycriptLockScreen;
+	CYConfiguration = {
+		Homepage = "file:///System/Library/LockCydgets/MSE.cydget/stock.html";
+		CycriptURLs = "^file:///System/Library/LockCydgets/MSE\\.cydget/stock\\.html$";
+		Scrollable = NO;
+	};
+}

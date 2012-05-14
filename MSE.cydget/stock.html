@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <meta name="viewport" content=
+        "width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <style type="text/css">
+            body {
+                color: white;
+                background:black;
+            }
+
+            #lcd {
+                width:100%;
+                background:white;
+            }
+
+            #lcd img{
+                display:block;
+                padding:10px 0px 10px 0px;
+                margin:auto;
+            }
+            #content {
+                font-family: "Helvetica";
+            }
+
+
+            #stocks {
+                border-collapse: seperate;
+                line-height:1.4em;
+                margin:10px auto 5px auto;
+
+            }
+
+            #stocks th{
+                padding:0px 15px 0px 15px;
+                font-weight:bold;
+                color: #777777;
+            }
+
+            #stocks td{
+                text-align:center;
+                padding: 0px 15px 0px 15px;
+                border:1px solid black;
+            }
+
+            #stocks tr:nth-child(2n) {
+              background-color: #333333;
+            }
+
+            #refresh {
+                display:block;
+                width:100%;
+                padding:10px;
+                line-height:1.4em;
+                color:#999999;
+                background-color: #333333;
+                border:none;
+                font-weight:bold;
+                margin:auto;
+            }
+
+            #motd {
+                width:70%;
+                text-align:center;
+                display:block;
+                margin:auto;
+                font-size:0.7em;
+                color:#777777;
+            }
+            tbody img{
+                margin:5px auto 5px auto;
+                max-height:25px;
+                max-width:25px;
+            }
+        </style>
+        <script type="text/javascript">
+
+        function makeHTTPRequest() {
+
+            var random = Math.floor(Math.random() * 2000)
+            var requestURL = "http://query.yahooapis.com/v1/public/yql?format=json&q=SELECT%20company.name,company.last_sale,company.Volume_traded,company.movement%20FROM%20xml%20WHERE%20url='http://mse.com.mv/stock_quotes.xml'&rnd=_"+random;
+
+            httpr = new XMLHttpRequest();
+            httpr.open("GET",requestURL);
+
+            httpr.onreadystatechange=function() {
+                if (httpr.readyState != 4 || httpr.status != 200)  {
+                    writeMOTD('error...check internet');
+                    return;
+                }
+                else {
+                    var serverResponse = httpr.responseText;
+                    writeTableBody(serverResponse);
+                    d = new Date();
+                    writeMOTD(d);
+                }
+            };
+
+            httpr.send();
+        }
+
+        function refreshStocks() {
+            tBod = table.getElementsByTagName('tbody')[0];
+            tBod.innerHTML = "<tr><td colspan=4><img src='ajax.gif' alt='loading...'' /><\/td><\/tr>";
+            makeHTTPRequest();
+        }
+
+        function writeMOTD(message){
+            document.getElementById('motd').innerHTML=message;
+        }
+
+        function writeTableBody(resp){
+            response = JSON.parse(resp);
+            results  = response.query.results.stock;
+
+            //delete the insides of the table first? i guess...
+            //do you need to?
+            tbody = document.createElement('tbody')
+
+            for (i=0;i<results.length;i++){
+                company = results[i].company
+                tr = document.createElement('tr');
+
+                td = document.createElement('th');
+                td.className='cname';
+                td.scope='row'
+                td.appendChild(document.createTextNode(company.name))
+                tr.appendChild(td);
+
+                td = document.createElement('td');
+                td.appendChild(document.createTextNode(company.last_sale))
+                tr.appendChild(td);
+
+                td = document.createElement('td');
+                td.appendChild(document.createTextNode(company.Volume_traded))
+                tr.appendChild(td);
+
+                td = document.createElement('td');
+                td.appendChild(document.createTextNode(company.movement))
+                tr.appendChild(td);
+
+                tbody.appendChild(tr)
+            }
+
+            table = document.getElementById('stocks');  
+            tNode = table.getElementsByTagName('tbody')[0];
+
+            table.replaceChild(tbody, tNode)
+        }
+        </script>
+    </head>
+    <body>
+        <script type="text/javascript">
+            makeHTTPRequest();
+        </script>
+        <div id="lcd">
+            <img src="logo.jpeg">
+        </div>
+        <div id="motd"></div>
+        <div id="content">
+            <table id="stocks">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th scope="col">
+                            sale
+                        </th>
+                        <th scope="col">
+                            vol
+                        </th>
+                        <th scope="col">
+                            mov
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="4">
+                            <img src="ajax.gif" alt="loading...">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <form>
+            <input id="refresh" type="button" value="Tap to Refresh" onclick="refreshStocks();"></input> 
+        </form>
+    </body>
+</html>
